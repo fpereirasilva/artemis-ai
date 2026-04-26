@@ -316,7 +316,9 @@ nano .env
 make up
 ```
 
-Documento completo passo-a-passo: [docs/deployment.md](docs/deployment.md).
+Documento completo passo-a-passo (genérico, qualquer cloud): [docs/deployment.md](docs/deployment.md).
+
+📘 **Case study real no Azure** — para ver como esta POC foi implementada na prática (decisões de SKU, custos reais, gotchas encontrados, sequência exata): [docs/azure-implementation.md](docs/azure-implementation.md).
 
 ---
 
