@@ -18,6 +18,20 @@ Times de tecnologia gastam centenas de dólares por mês em licenças individuai
 
 ---
 
+## 🐱 Construído sobre o Neko
+
+> **Artemis AI usa o [Neko](https://github.com/m1k1o/neko) como motor de browser streaming.**
+> Todo o crédito do projeto que torna isso possível vai para o autor e mantenedores do Neko ([@m1k1o](https://github.com/m1k1o) e contribuidores).
+>
+> Artemis AI é uma camada de **orquestração, documentação, e referência arquitetural** em cima do Neko — combinando-o com Traefik, Let's Encrypt, scripts de bootstrap e docs para um caso de uso específico (compartilhamento de contas de IA).
+>
+> 🔗 **Repositório oficial do Neko:** https://github.com/m1k1o/neko
+> 📖 **Documentação do Neko:** https://neko.m1k1o.net/
+
+Se este projeto te ajudou, **considere dar uma estrela no Neko também** — é o coração da solução.
+
+---
+
 ## 🎯 Para quem isso serve
 
 - **Times pequenos** que querem reduzir custo de licenças de IA sem virar caos de credenciais
