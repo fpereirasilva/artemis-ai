@@ -1,0 +1,67 @@
+# =============================================================================
+# Artemis AI - .gitignore (estrito - protege contra vazamento de segredos)
+# =============================================================================
+
+# ---- SEGREDOS - NUNCA COMMITAR ----
+.env
+.env.local
+.env.*.local
+*.env.backup
+secrets/
+artemis-secrets/
+credentials*
+*.pem
+*.key
+*.p12
+*.pfx
+id_rsa*
+id_ed25519*
+acme.json
+certs/
+.terraform/
+*.tfstate
+*.tfstate.*
+
+# ---- DADOS DE PERFIS (cookies, downloads dos usuários) ----
+data/
+volumes/
+
+# ---- LOGS ----
+*.log
+logs/
+
+# ---- DOCKER ----
+.docker/
+
+# ---- TERRAFORM / IaC ----
+.terraform/
+*.tfvars
+!example.tfvars
+
+# ---- PACOTES E BUILDS ----
+*.tar.gz
+*.zip
+*.tgz
+dist/
+build/
+node_modules/
+__pycache__/
+*.pyc
+
+# ---- EDITORES E IDE ----
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# ---- TEMP ----
+tmp/
+temp/
+*.tmp
+*.bak
+
+# ---- CLAUDE ----
+.claude/

@@ -1,0 +1,222 @@
+# =============================================================================
+# Artemis AI - Docker Compose
+# Stack: Traefik v3.6 + Let's Encrypt + 4 perfis Neko Chromium
+# =============================================================================
+# Antes de subir:
+#   1. Copie .env.example para .env e preencha os valores
+#   2. Configure DNS apontando para a VM
+#   3. Garanta que portas 80, 443 e UDP 59000-59399 estao liberadas
+# =============================================================================
+
+services:
+
+  # ===========================================================================
+  # TRAEFIK - reverse proxy, TLS automatico, dashboard
+  # ===========================================================================
+  traefik:
+    image: traefik:v3.6
+    container_name: traefik
+    restart: unless-stopped
+    environment:
+      DOCKER_API_VERSION: "1.45"
+    command:
+      # Providers
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --providers.docker.network=neko-net
+      # Entrypoints
+      - --entrypoints.web.address=:80
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
+      - --entrypoints.websecure.address=:443
+      # Let's Encrypt
+      - --certificatesresolvers.le.acme.email=${LE_EMAIL}
+      - --certificatesresolvers.le.acme.storage=/certs/acme.json
+      - --certificatesresolvers.le.acme.tlschallenge=true
+      # Dashboard
+      - --api.dashboard=true
+      # Logs
+      - --log.level=INFO
+      - --accesslog=true
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./certs:/certs
+    networks:
+      - neko-net
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.dashboard.rule=Host(`traefik.${DOMAIN_BASE}`)
+      - traefik.http.routers.dashboard.entrypoints=websecure
+      - traefik.http.routers.dashboard.tls.certresolver=le
+      - traefik.http.routers.dashboard.service=api@internal
+      - traefik.http.routers.dashboard.middlewares=auth-dash
+      - traefik.http.middlewares.auth-dash.basicauth.users=${TRAEFIK_BASIC_AUTH}
+
+  # ===========================================================================
+  # PERFIL 1
+  # WebRTC EPR: 59000-59099
+  # ===========================================================================
+  neko-profile1:
+    image: ghcr.io/m1k1o/neko/chromium:latest
+    container_name: neko-profile1
+    restart: unless-stopped
+    shm_size: 2gb
+    cap_add:
+      - SYS_ADMIN
+    environment:
+      NEKO_DESKTOP_SCREEN: "1920x1080@30"
+      NEKO_FILETRANSFER_ENABLED: "true"
+      NEKO_FILETRANSFER_ROOT_DIR: "/home/neko/Downloads"
+      NEKO_MEMBER_PROVIDER: "multiuser"
+      NEKO_MEMBER_MULTIUSER_USER_PASSWORD: "${PROFILE1_USER_PASS}"
+      NEKO_MEMBER_MULTIUSER_ADMIN_PASSWORD: "${PROFILE1_ADMIN_PASS}"
+      NEKO_SESSION_IMPLICIT_HOSTING: "true"
+      NEKO_SESSION_MERCIFUL_RECONNECT: "true"
+      NEKO_WEBRTC_EPR: "59000-59099"
+      NEKO_WEBRTC_NAT1TO1: "${PUBLIC_IP}"
+    volumes:
+      - ./data/profile1:/home/neko
+    deploy:
+      resources:
+        limits:
+          cpus: "1.5"
+          memory: 3g
+    ports:
+      - "59000-59099:59000-59099/udp"
+    networks:
+      - neko-net
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.profile1.rule=Host(`profile1.${DOMAIN_BASE}`)
+      - traefik.http.routers.profile1.entrypoints=websecure
+      - traefik.http.routers.profile1.tls.certresolver=le
+      - traefik.http.services.profile1.loadbalancer.server.port=8080
+
+  # ===========================================================================
+  # PERFIL 2
+  # WebRTC EPR: 59100-59199
+  # ===========================================================================
+  neko-profile2:
+    image: ghcr.io/m1k1o/neko/chromium:latest
+    container_name: neko-profile2
+    restart: unless-stopped
+    shm_size: 2gb
+    cap_add:
+      - SYS_ADMIN
+    environment:
+      NEKO_DESKTOP_SCREEN: "1920x1080@30"
+      NEKO_FILETRANSFER_ENABLED: "true"
+      NEKO_FILETRANSFER_ROOT_DIR: "/home/neko/Downloads"
+      NEKO_MEMBER_PROVIDER: "multiuser"
+      NEKO_MEMBER_MULTIUSER_USER_PASSWORD: "${PROFILE2_USER_PASS}"
+      NEKO_MEMBER_MULTIUSER_ADMIN_PASSWORD: "${PROFILE2_ADMIN_PASS}"
+      NEKO_SESSION_IMPLICIT_HOSTING: "true"
+      NEKO_SESSION_MERCIFUL_RECONNECT: "true"
+      NEKO_WEBRTC_EPR: "59100-59199"
+      NEKO_WEBRTC_NAT1TO1: "${PUBLIC_IP}"
+    volumes:
+      - ./data/profile2:/home/neko
+    deploy:
+      resources:
+        limits:
+          cpus: "1.5"
+          memory: 3g
+    ports:
+      - "59100-59199:59100-59199/udp"
+    networks:
+      - neko-net
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.profile2.rule=Host(`profile2.${DOMAIN_BASE}`)
+      - traefik.http.routers.profile2.entrypoints=websecure
+      - traefik.http.routers.profile2.tls.certresolver=le
+      - traefik.http.services.profile2.loadbalancer.server.port=8080
+
+  # ===========================================================================
+  # PERFIL 3
+  # WebRTC EPR: 59200-59299
+  # ===========================================================================
+  neko-profile3:
+    image: ghcr.io/m1k1o/neko/chromium:latest
+    container_name: neko-profile3
+    restart: unless-stopped
+    shm_size: 2gb
+    cap_add:
+      - SYS_ADMIN
+    environment:
+      NEKO_DESKTOP_SCREEN: "1920x1080@30"
+      NEKO_FILETRANSFER_ENABLED: "true"
+      NEKO_FILETRANSFER_ROOT_DIR: "/home/neko/Downloads"
+      NEKO_MEMBER_PROVIDER: "multiuser"
+      NEKO_MEMBER_MULTIUSER_USER_PASSWORD: "${PROFILE3_USER_PASS}"
+      NEKO_MEMBER_MULTIUSER_ADMIN_PASSWORD: "${PROFILE3_ADMIN_PASS}"
+      NEKO_SESSION_IMPLICIT_HOSTING: "true"
+      NEKO_SESSION_MERCIFUL_RECONNECT: "true"
+      NEKO_WEBRTC_EPR: "59200-59299"
+      NEKO_WEBRTC_NAT1TO1: "${PUBLIC_IP}"
+    volumes:
+      - ./data/profile3:/home/neko
+    deploy:
+      resources:
+        limits:
+          cpus: "1.5"
+          memory: 3g
+    ports:
+      - "59200-59299:59200-59299/udp"
+    networks:
+      - neko-net
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.profile3.rule=Host(`profile3.${DOMAIN_BASE}`)
+      - traefik.http.routers.profile3.entrypoints=websecure
+      - traefik.http.routers.profile3.tls.certresolver=le
+      - traefik.http.services.profile3.loadbalancer.server.port=8080
+
+  # ===========================================================================
+  # PERFIL 4
+  # WebRTC EPR: 59300-59399
+  # ===========================================================================
+  neko-profile4:
+    image: ghcr.io/m1k1o/neko/chromium:latest
+    container_name: neko-profile4
+    restart: unless-stopped
+    shm_size: 2gb
+    cap_add:
+      - SYS_ADMIN
+    environment:
+      NEKO_DESKTOP_SCREEN: "1920x1080@30"
+      NEKO_FILETRANSFER_ENABLED: "true"
+      NEKO_FILETRANSFER_ROOT_DIR: "/home/neko/Downloads"
+      NEKO_MEMBER_PROVIDER: "multiuser"
+      NEKO_MEMBER_MULTIUSER_USER_PASSWORD: "${PROFILE4_USER_PASS}"
+      NEKO_MEMBER_MULTIUSER_ADMIN_PASSWORD: "${PROFILE4_ADMIN_PASS}"
+      NEKO_SESSION_IMPLICIT_HOSTING: "true"
+      NEKO_SESSION_MERCIFUL_RECONNECT: "true"
+      NEKO_WEBRTC_EPR: "59300-59399"
+      NEKO_WEBRTC_NAT1TO1: "${PUBLIC_IP}"
+    volumes:
+      - ./data/profile4:/home/neko
+    deploy:
+      resources:
+        limits:
+          cpus: "1.5"
+          memory: 3g
+    ports:
+      - "59300-59399:59300-59399/udp"
+    networks:
+      - neko-net
+    labels:
+      - traefik.enable=true
+      - traefik.http.routers.profile4.rule=Host(`profile4.${DOMAIN_BASE}`)
+      - traefik.http.routers.profile4.entrypoints=websecure
+      - traefik.http.routers.profile4.tls.certresolver=le
+      - traefik.http.services.profile4.loadbalancer.server.port=8080
+
+# =============================================================================
+networks:
+  neko-net:
+    name: neko-net
+    driver: bridge
